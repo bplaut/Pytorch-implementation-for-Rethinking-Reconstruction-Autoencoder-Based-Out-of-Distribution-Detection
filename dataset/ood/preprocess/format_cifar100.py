@@ -6,6 +6,7 @@ from scipy.io import loadmat
 import numpy as np
 import os
 from PIL import Image
+import sys
 
 
 def generate_data_description(save_dir,img_dir,dataset_name,name_list,y):
@@ -48,12 +49,13 @@ def get_cifar100(folder):
 
     return train_data, np.array(train_coarse_labels), np.array(train_fine_labels), test_data, np.array(test_coarse_labels), np.array(test_fine_labels)
 
-
-datapath2 = "./data/cifar100/cifar-100-python"
+data_dir = sys.argv[1]
+datapath2 = f'{data_dir}/cifar100/cifar-100-python'
 tr_data, _, tr_labels, te_data, _, te_labels = get_cifar100(datapath2)
 y = np.concatenate([tr_labels,te_labels],0)
 
-root = 'data/cifar100/images/'
+root = f'{data_dir}/cifar100/images/'
+os.makedirs(root,exist_ok=True)
 name_list = []
 for i in range(tr_data.shape[0]):
     temp = np.reshape(tr_data[i].astype(np.int),[3,32,32]).transpose([1,2,0])
@@ -74,7 +76,7 @@ for i in range(te_data.shape[0]):
 np.random.seed(0)
 random.seed(0)
 
-save_dir = './data/cifar100'
-img_dir = './data/cifar100/images/'
+save_dir = f'{data_dir}/cifar100'
+img_dir = f'{data_dir}/cifar100/images/'
 dataset_name = 'cifar100'
 generate_data_description(save_dir,img_dir,dataset_name,name_list,y)
