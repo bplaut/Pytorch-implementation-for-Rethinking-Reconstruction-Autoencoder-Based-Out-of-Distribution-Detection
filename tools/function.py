@@ -96,7 +96,7 @@ class LogVisual:
 
 def get_pkl_rootpath(dataset):
     
-    root = os.path.join('/home/zyb/playground/OoD/data/', f"{dataset}")
+    root = os.path.join('/nas/ucb/bplaut/Pytorch-implementation-for-Rethinking-Reconstruction-Autoencoder-Based-Out-of-Distribution-Detection/data/', f"{dataset}")
     data_path = os.path.join(root, 'dataset.pkl')  #
 
     return data_path

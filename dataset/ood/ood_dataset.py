@@ -44,7 +44,7 @@ class ood_dataloader(data.Dataset):
 
             dataset_info = pickle.load(open(data_path, 'rb+'))
             self.dataset = dataset_name
-            self.root_path = dataset_info.root
+            self.root_path = '/nas/ucb/bplaut/Pytorch-implementation-for-Rethinking-Reconstruction-Autoencoder-Based-Out-of-Distribution-Detection/data/cifar100/images'
             self.transform = transform
             
             if dataset_name == 'cifar100':
