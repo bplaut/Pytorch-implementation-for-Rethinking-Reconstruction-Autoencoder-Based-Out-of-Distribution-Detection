@@ -54,11 +54,7 @@ def main(cfg, args):
     if cfg.NAME == 'OOD':
         if cfg.DATASET.TYPE == 'cifar':
             
-            valid_set_isun = ood_dataloader('isun', split=None, transform=valid_tsfm)
-            valid_set_lsuncrop = ood_dataloader('lsuncrop', split=None, transform=valid_tsfm)
-            valid_set_lsunre = ood_dataloader('lsunre', split=None, transform=valid_tsfm)
             valid_set_tinycrop = ood_dataloader('tinycrop', split=None, transform=valid_tsfm)
-            valid_set_tinyre = ood_dataloader('tinyre', split=None, transform=valid_tsfm)
 
     train_sampler = None
     train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=cfg.TRAIN.BATCH_SIZE, sampler=train_sampler, 
@@ -83,23 +79,15 @@ def main(cfg, args):
         if cfg.DATASET.TYPE == 'cifar':
             valid_loader_ID = torch.utils.data.DataLoader(dataset=valid_set, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
 
-            valid_loader_isun = torch.utils.data.DataLoader(dataset=valid_set_isun, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
-            valid_loader_lsuncrop = torch.utils.data.DataLoader(dataset=valid_set_lsuncrop, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
-            valid_loader_lsunre = torch.utils.data.DataLoader(dataset=valid_set_lsunre, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
             valid_loader_tinycrop = torch.utils.data.DataLoader(dataset=valid_set_tinycrop, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
-            valid_loader_tinyre = torch.utils.data.DataLoader(dataset=valid_set_tinyre, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
 
-            valid_loader_list = [valid_loader_ID, valid_loader_isun, valid_loader_lsuncrop, valid_loader_lsunre, valid_loader_tinycrop, valid_loader_tinyre]
+            valid_loader_list = [valid_loader_ID, valid_loader_tinycrop]
             if args.local_rank == 0:
                 print('-' * 60)
                 print(f'{cfg.DATASET.NAME},'
                     f'{cfg.DATASET.TRAIN_SPLIT} set: {len(train_set)}, '
                     f'{cfg.DATASET.TEST_SPLIT} set: {len(valid_loader_ID.dataset)}, '
-                    f'isun set: {len(valid_loader_isun.dataset)}, '
-                    f'lsun-crop set: {len(valid_loader_lsuncrop.dataset)}, '
-                    f'lsun-resize set: {len(valid_loader_lsunre.dataset)}, '
-                    f'TinyImagenet-crop set: {len(valid_loader_tinycrop.dataset)}, '
-                    f'TinyImagenet-resize set: {len(valid_loader_tinyre.dataset)}, ')
+                    f'TinyImagenet-crop set: {len(valid_loader_tinycrop.dataset)}, ')
    
     #do not use self.dropout but F.dropout with self.training in forward feeding arg.
     
@@ -252,20 +240,15 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
                     'pred_all': preds_all,
                     }
 
-                #ID,isun,lsuncrop,lsunre,tinycrop,tinyre
                 if args.local_rank == 0:
                     print(f'Evaluation on train set, train losses {train_loss[0]}, {train_loss[1]}, {train_loss[2]}\n',
                             'accuracy: {:.4f} \n'.format(train_result.acc))
                     print(f'current best {maximum} at {best_epoch}\n')
                     print(f'Evaluation on valid set, valid losses {valid_loss[0]}, {valid_loss[1]}, {valid_loss[2]}\n',
                             'accuracy: {:.4f} \n'.format(valid_result.acc),
-                            f'isun    :{ood_result[0].fpr}, {ood_result[0].de}, {ood_result[0].roc}, {ood_result[0].pr} \n',
-                            f'lsuncrop:{ood_result[1].fpr}, {ood_result[1].de}, {ood_result[1].roc}, {ood_result[1].pr} \n',
-                            f'lsunre  :{ood_result[2].fpr}, {ood_result[2].de}, {ood_result[2].roc}, {ood_result[2].pr} \n',
-                            f'tinycrop:{ood_result[3].fpr}, {ood_result[3].de}, {ood_result[3].roc}, {ood_result[3].pr} \n',
-                            f'tinyre  :{ood_result[4].fpr}, {ood_result[4].de}, {ood_result[4].roc}, {ood_result[4].pr} \n')
+                            f'tinycrop:{ood_result[0].fpr}, {ood_result[0].de}, {ood_result[0].roc}, {ood_result[0].pr} \n')
                     
-                cur_metric = (ood_result[0].roc + ood_result[1].roc + ood_result[2].roc + ood_result[3].roc + ood_result[4].roc)/5 
+                cur_metric = ood_result[0].roc
                 
             elif cfg.NAME == 'ID':
                 
