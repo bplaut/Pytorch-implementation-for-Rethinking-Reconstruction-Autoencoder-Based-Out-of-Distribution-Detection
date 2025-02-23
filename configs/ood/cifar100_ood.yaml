@@ -2,7 +2,7 @@ NAME: 'OOD'
 
 RELOAD:
   TYPE: True
-  PTH: 'saved_model/backbone/WRN_28_10_01_crop05'
+  PTH: 'saved_model/backbone/wideresnet'
 
 DATASET:
   VAL_SPLIT: test
