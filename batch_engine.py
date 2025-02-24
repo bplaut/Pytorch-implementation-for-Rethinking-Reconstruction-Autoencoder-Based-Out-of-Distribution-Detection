@@ -133,8 +133,8 @@ def valid_trainer(cfg, args, epoch, model, valid_loader_list, criterion):
             preds_logits = []
             gt_list = []
         
-            #ID,isun,lsuncrop,lsunre,tinycrop,tinyre
-            preds_all = [[],[],[],[],[],[]]
+            #ID and tinycrop
+            preds_all = [[],[]]
             
             count = 0
             with torch.no_grad():
