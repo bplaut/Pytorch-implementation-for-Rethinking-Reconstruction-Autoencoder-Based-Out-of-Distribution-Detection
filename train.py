@@ -46,17 +46,13 @@ def main(cfg, args):
     train_tsfm, valid_tsfm = get_transform(cfg)
     train_fraction = 0.8
     train_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.train_datapath, transform=train_tsfm, lo=0, hi=train_fraction)
-    valid_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.test_datapath, transform=valid_tsfm, lo=train_fraction, hi=1)
-    
+    valid_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.train_datapath, transform=valid_tsfm, lo=train_fraction, hi=1)
+    if args.test_datapath is not None:
+        test_dir = os.path.dirname(args.test_datapath)
+        test_set = ood_dataloader(test_dir, datapath=args.test_datapath, transform=valid_tsfm)
     args.cls_num = train_set.attr_num
     print(cfg)
-    print(train_tsfm)
         
-    if cfg.NAME == 'OOD':
-        if cfg.DATASET.TYPE == 'cifar':
-            
-            valid_set_tinycrop = ood_dataloader('tinycrop', split=None, transform=valid_tsfm)
-
     train_sampler = None
     train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=cfg.TRAIN.BATCH_SIZE, sampler=train_sampler, 
         shuffle=train_sampler is None,
@@ -77,18 +73,17 @@ def main(cfg, args):
 
     elif cfg.NAME == 'OOD':
         
-        if cfg.DATASET.TYPE == 'cifar':
-            valid_loader_ID = torch.utils.data.DataLoader(dataset=valid_set, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
+        valid_loader = torch.utils.data.DataLoader(dataset=valid_set, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
 
-            valid_loader_tinycrop = torch.utils.data.DataLoader(dataset=valid_set_tinycrop, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
+        test_loader = torch.utils.data.DataLoader(dataset=test_set, batch_size=cfg.TRAIN.BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, drop_last=False)
 
-            valid_loader_list = [valid_loader_ID, valid_loader_tinycrop]
-            if args.local_rank == 0:
-                print('-' * 60)
-                print(f'{cfg.DATASET.NAME},'
-                    f'{cfg.DATASET.TRAIN_SPLIT} set: {len(train_set)}, '
-                    f'{cfg.DATASET.TEST_SPLIT} set: {len(valid_loader_ID.dataset)}, '
-                    f'TinyImagenet-crop set: {len(valid_loader_tinycrop.dataset)}, ')
+        valid_loader_list = [valid_loader, test_loader]
+        if args.local_rank == 0:
+            print('-' * 60)
+            print(f'{cfg.DATASET.NAME},'
+                f'{cfg.DATASET.TRAIN_SPLIT} set: {len(train_set)}, '
+                f'{cfg.DATASET.TEST_SPLIT} set: {len(valid_loader.dataset)}, '
+                f'{os.path.dirname(args.test_datapath)} set: {len(test_loader.dataset)}, ')
    
     #do not use self.dropout but F.dropout with self.training in forward feeding arg.
     
@@ -186,7 +181,6 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
     best_epoch = 0
 
     result_list = defaultdict()
-
     result_path = os.path.join(os.path.dirname(path), 'metric.pkl')
     
 
