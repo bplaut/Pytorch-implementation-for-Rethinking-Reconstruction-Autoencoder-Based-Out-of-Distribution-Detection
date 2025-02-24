@@ -187,9 +187,8 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
 
     result_list = defaultdict()
 
-    result_path = path
-    result_path = result_path.replace('ckpt_max', 'metric')
-    result_path = result_path.replace('pth', 'pkl')
+    result_path = os.path.join(os.path.dirname(path), 'metric.pkl')
+    
 
     for e in range(epoch):
         
