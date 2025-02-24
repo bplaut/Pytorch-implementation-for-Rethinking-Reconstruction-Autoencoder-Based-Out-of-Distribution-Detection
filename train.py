@@ -207,7 +207,7 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
         elif cfg.TRAIN.LR_SCHEDULER.TYPE == 'multistep':
             lr_scheduler.step()
             
-        if True:
+        if e >= cfg.TRAIN.MAX_EPOCH * 0.7 and e % 4 == 0:
             valid_loss, valid_gt, valid_logits = valid_trainer(
                 cfg,
                 args=args,
