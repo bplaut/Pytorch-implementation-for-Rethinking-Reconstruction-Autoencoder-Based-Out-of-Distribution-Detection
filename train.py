@@ -44,8 +44,8 @@ def main(cfg, args):
     args.rank = 0
     
     train_tsfm, valid_tsfm = get_transform(cfg)
-    train_set = ood_dataloader(cfg.DATASET.NAME, split=cfg.DATASET.TRAIN_SPLIT, transform=train_tsfm)
-    valid_set = ood_dataloader(cfg.DATASET.NAME, split=cfg.DATASET.VAL_SPLIT, transform=valid_tsfm)
+    train_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.train_datapath, transform=train_tsfm)
+    valid_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.test_datapath, transform=valid_tsfm)
     
     args.cls_num = train_set.attr_num
     print(cfg)
@@ -297,6 +297,10 @@ def argument_parser():
                         type=int)
     parser.add_argument('--dist_bn', type=str, default='',
                         help='Distribute BatchNorm stats between nodes after each epoch ("broadcast", "reduce", or "")')
+    parser.add_argument('-r', '--train_datapath', type=str, default=None,
+                        help='Path to the training dataset')
+    parser.add_argument('-e', '--test_datapath', type=str, default=None,
+                        help='Path to the test dataset')
 
     args = parser.parse_args()
 

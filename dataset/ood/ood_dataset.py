@@ -15,51 +15,24 @@ class DataLoaderX(DataLoader):
 
 class ood_dataloader(data.Dataset):
 
-    def __init__(self, dataset_name, split, transform=None):
-
-        assert dataset_name in ['cifar10', 'cifar100', 'imagenet1k', 'inaturalist','isun','lsuncrop','lsunre','places','sun','texture','tinycrop','tinyre'], \
-            f'dataset name {dataset_name} is not exist'
-        if dataset_name not in ['cifar10','cifar100','imagenet1k']:
-            
-            data_path = get_pkl_rootpath(dataset_name)
-            print("which pickle", data_path)
-            
-            dataset_info = pickle.load(open(data_path, 'rb+'))
-            self.dataset = dataset_name
-            self.root_path = '/nas/ucb/bplaut/Pytorch-implementation-for-Rethinking-Reconstruction-Autoencoder-Based-Out-of-Distribution-Detection/data/tinycrop/test'
-            self.transform = transform
-            
-            self.attr_num = 100
-            
-            img_id = dataset_info.image_name
-            self.img_idx = dataset_info.partition
-            self.img_id = [img_id[i] for i in self.img_idx]
-            self.img_num = self.img_idx.shape[0]
-            self.label = np.zeros(self.img_num)
+    def __init__(self, dataset_name, datapath=None, transform=None):
+        self.root_path = datapath
+        self.transform = transform
+        # Images must have the format [idx].png, their labels have the format [idx].txt
+        self.img_id = [f for f os.listdir(self.root_path) if f.endswith('.png')]
+        self.img_idx = [int(imgname.split('.')[0]) for imgname in self.img_id]
+        self.label = []
+        for idx in self.img_idx:
+            label_file = os.path.join(self.root_path, str(idx) + '.txt')
+            if os.path.exists(label_file):
+                with open(label_file, 'r') as f:
+                    self.label.append(int(f.read().strip()))
+        # Either there should be one label for each image, or no labels (for the test set)
+        if len(self.label) == 0:
+            self.label = np.zeros(len(self.img_id))
+        assert(len(self.img_id) == len(self.label) == len(self.img_idx))
+        self.attr_num = len(np.unique(self.label))
                 
-        else: 
-            data_path = get_pkl_rootpath(dataset_name)
-            print("which pickle", data_path)
-
-            dataset_info = pickle.load(open(data_path, 'rb+'))
-            self.dataset = dataset_name
-            self.root_path = '/nas/ucb/bplaut/Pytorch-implementation-for-Rethinking-Reconstruction-Autoencoder-Based-Out-of-Distribution-Detection/data/cifar100/images'
-            self.transform = transform
-            
-            if dataset_name == 'cifar100':
-                self.attr_num = 100
-            elif dataset_name == 'cifar10':
-                self.attr_num = 10
-            elif dataset_name == 'imagenet1k':
-                self.attr_num = 1000 
-            
-            assert split in dataset_info.partition.keys(), f'split {split} is not exist'
-            img_id = dataset_info.image_name
-            self.img_idx = dataset_info.partition[split]
-            self.img_id = [img_id[i] for i in self.img_idx]
-            self.label = dataset_info.label[self.img_idx]
-            self.img_num = self.img_idx.shape[0]
-            
     def __getitem__(self, index):
         
         imgname, gt_label, imgidx = self.img_id[index], self.label[index], self.img_idx[index]
