@@ -19,7 +19,6 @@ class ood_dataloader(data.Dataset):
 
         assert dataset_name in ['cifar10', 'cifar100', 'imagenet1k', 'inaturalist','isun','lsuncrop','lsunre','places','sun','texture','tinycrop','tinyre'], \
             f'dataset name {dataset_name} is not exist'
-        
         if dataset_name not in ['cifar10','cifar100','imagenet1k']:
             
             data_path = get_pkl_rootpath(dataset_name)
@@ -27,7 +26,7 @@ class ood_dataloader(data.Dataset):
             
             dataset_info = pickle.load(open(data_path, 'rb+'))
             self.dataset = dataset_name
-            self.root_path = '/nas/ucb/bplaut/Pytorch-implementation-for-Rethinking-Reconstruction-Autoencoder-Based-Out-of-Distribution-Detection/data/cifar100/images'
+            self.root_path = '/nas/ucb/bplaut/Pytorch-implementation-for-Rethinking-Reconstruction-Autoencoder-Based-Out-of-Distribution-Detection/data/tinycrop/test'
             self.transform = transform
             
             self.attr_num = 100
