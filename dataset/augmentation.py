@@ -53,19 +53,22 @@ def get_transform(cfg):
     
     if cfg.NAME == 'ID':
         train_transform = T.Compose([
-            RandomCrop([32,32],4,0.5),
+            T.Resize((width, width)),
+            RandomCrop([width,width],4,0.5),
             T.RandomHorizontalFlip(0.5),
             T.ToTensor(),
             normalize,
         ])
     else:
         train_transform = T.Compose([
+            T.Resize((width, width)),
             T.RandomHorizontalFlip(0.5),
             T.ToTensor(),
             normalize,
         ])
 
     valid_transform = T.Compose([
+        T.Resize((width, width)),
         T.ToTensor(),
         normalize
     ])
