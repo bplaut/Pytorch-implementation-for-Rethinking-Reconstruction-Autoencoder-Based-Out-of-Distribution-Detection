@@ -44,8 +44,9 @@ def main(cfg, args):
     args.rank = 0
     
     train_tsfm, valid_tsfm = get_transform(cfg)
-    train_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.train_datapath, transform=train_tsfm)
-    valid_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.test_datapath, transform=valid_tsfm)
+    train_fraction = 0.8
+    train_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.train_datapath, transform=train_tsfm, lo=0, hi=train_fraction)
+    valid_set = ood_dataloader(cfg.DATASET.NAME, datapath=args.test_datapath, transform=valid_tsfm, lo=train_fraction, hi=1)
     
     args.cls_num = train_set.attr_num
     print(cfg)

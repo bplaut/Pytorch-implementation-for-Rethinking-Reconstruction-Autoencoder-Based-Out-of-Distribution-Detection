@@ -15,11 +15,14 @@ class DataLoaderX(DataLoader):
 
 class ood_dataloader(data.Dataset):
 
-    def __init__(self, dataset_name, datapath=None, transform=None):
+    def __init__(self, dataset_name, datapath=None, transform=None, lo=0, hi=1):
         self.root_path = datapath
         self.transform = transform
         # Images must have the format [idx].png, their labels have the format [idx].txt
-        self.img_id = [f for f os.listdir(self.root_path) if f.endswith('.png')]
+        self.img_id = [f for f in os.listdir(self.root_path) if f.endswith('.png')]
+        lo_idx = int(lo*len(self.img_id))
+        hi_idx = int(hi*len(self.img_id))
+        self.img_id = sorted(self.img_id)[lo_idx:hi_idx]
         self.img_idx = [int(imgname.split('.')[0]) for imgname in self.img_id]
         self.label = []
         for idx in self.img_idx:
@@ -32,6 +35,11 @@ class ood_dataloader(data.Dataset):
             self.label = np.zeros(len(self.img_id))
         assert(len(self.img_id) == len(self.label) == len(self.img_idx))
         self.attr_num = len(np.unique(self.label))
+        self.img_num = len(self.img_id)
+        if len(self.img_id) == 0:
+            raise ValueError(f"No images found in {self.root_path}")
+        else:
+            print(f"Loaded from {self.root_path} with {self.attr_num} classes and {len(self.img_id)} images, from {lo_idx} to {hi_idx}")
                 
     def __getitem__(self, index):
         

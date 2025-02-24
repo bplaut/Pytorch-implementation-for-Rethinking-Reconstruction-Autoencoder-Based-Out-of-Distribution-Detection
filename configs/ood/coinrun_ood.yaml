@@ -2,10 +2,9 @@ NAME: 'OOD'
 
 RELOAD:
   TYPE: True
-  PTH: 'saved_model/backbone/wideresnet'
+  PTH: 'saved_model/backbone/wideresnet/coinrun.pth'
 
 DATASET:
-  VAL_SPLIT: test
   TYPE: 'coinrun'
   NAME: 'coinrun'
 

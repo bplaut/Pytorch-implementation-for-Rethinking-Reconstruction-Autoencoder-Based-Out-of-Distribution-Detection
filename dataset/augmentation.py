@@ -43,11 +43,13 @@ def get_transform(cfg):
     elif cfg.DATASET.NAME == 'imagenet1k':
         mean=[0.485, 0.456, 0.406]
         std=[0.229, 0.224, 0.225]
+    else:
+        mean = [0.5071, 0.4867, 0.4408]
+        std = [0.2675, 0.2565, 0.2761]
+
         
     normalize = T.Normalize(mean=mean, std=std)
-
-    if cfg.DATASET.TYPE == 'cifar':
-        width = 32
+    width = 32
     
     if cfg.NAME == 'ID':
         train_transform = T.Compose([

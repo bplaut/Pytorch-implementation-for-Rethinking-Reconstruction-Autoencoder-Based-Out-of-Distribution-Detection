@@ -103,7 +103,6 @@ def get_pkl_rootpath(dataset):
 
 def get_reload_weight(model, model_path='saved_model/'):
 
-    model_path = os.path.join(model_path, 'ckpt_max.pth')
     load_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
 
     if isinstance(load_dict, OrderedDict):
