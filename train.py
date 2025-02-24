@@ -213,7 +213,7 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
         elif cfg.TRAIN.LR_SCHEDULER.TYPE == 'multistep':
             lr_scheduler.step()
             
-        if e >= cfg.TRAIN.MAX_EPOCH * 0.7 and e % 4 == 0:
+        if True:
             valid_loss, valid_gt, valid_logits = valid_trainer(
                 cfg,
                 args=args,
@@ -246,7 +246,7 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
                     print(f'current best {maximum} at {best_epoch}\n')
                     print(f'Evaluation on valid set, valid losses {valid_loss[0]}, {valid_loss[1]}, {valid_loss[2]}\n',
                             'accuracy: {:.4f} \n'.format(valid_result.acc),
-                            f'tinycrop:{ood_result[0].fpr}, {ood_result[0].de}, {ood_result[0].roc}, {ood_result[0].pr} \n')
+                            f'\ntinycrop:\nFPR@TPR=95 = {ood_result[0].fpr}\nDetection error = {ood_result[0].de}\nAUROC = {ood_result[0].roc}\nAUPR = {ood_result[0].pr} \n')
                     
                 cur_metric = ood_result[0].roc
                 
