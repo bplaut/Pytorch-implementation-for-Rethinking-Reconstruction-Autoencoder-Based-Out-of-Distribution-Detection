@@ -23,6 +23,7 @@ from tools.function import get_model_log_path, get_reload_weight, seperate_weigh
 from tools.utils import build_optimizer_schedular, time_str, save_ckpt, ReDirectSTD, set_seed, str2bool
 from models.backbone.wideresnet import WideResNet
 from models.backbone.dense_net import DenseNet
+from draw import create_annotated_ood_images
 
 torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(True)
@@ -207,7 +208,10 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
         elif cfg.TRAIN.LR_SCHEDULER.TYPE == 'multistep':
             lr_scheduler.step()
             
-        if e >= cfg.TRAIN.MAX_EPOCH * 0.7 and e % 4 == 0:
+        if (e >= cfg.TRAIN.MAX_EPOCH * 0.7 and e % 4 == 0) or args.always_eval:
+            if args.save_image_path is not None:
+                output_dir = os.path.join(args.save_image_path, f'ood_visualized_epoch_{e}')
+                create_annotated_ood_images(cfg, args, model, valid_loader_list, output_dir)                
             valid_loss, valid_gt, valid_logits = valid_trainer(
                 cfg,
                 args=args,
@@ -221,7 +225,7 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
                 preds_all = valid_logits[1]
                 valid_logits = valid_logits[0]
                 ood_result = get_ood_metrics(preds_all, cfg=cfg)
-                
+
                 train_result = get_cls_metrics(train_logits,train_gt)
                 valid_result = get_cls_metrics(valid_logits,valid_gt)
                 
@@ -295,6 +299,9 @@ def argument_parser():
                         help='Path to the training dataset')
     parser.add_argument('-e', '--test_datapath', type=str, default=None,
                         help='Path to the test dataset')
+    parser.add_argument('-s', '--save_image_path', type=str, default=None,
+                        help='Path to save images (if None, images are not saved)')
+    parser.add_argument('--always_eval', action='store_true',help='Evaluate performance every epoch (as opposed to just towards the end of the process)')
 
     args = parser.parse_args()
 
