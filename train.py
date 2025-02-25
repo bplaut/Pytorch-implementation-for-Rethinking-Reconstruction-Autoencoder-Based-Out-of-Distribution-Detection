@@ -240,7 +240,7 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
                     print(f'current best {maximum} at {best_epoch}\n')
                     print(f'Evaluation on valid set, valid losses {valid_loss[0]}, {valid_loss[1]}, {valid_loss[2]}\n',
                             'accuracy: {:.4f} \n'.format(valid_result.acc),
-                            f'\ntinycrop:\nFPR@TPR=95 = {ood_result[0].fpr}\nDetection error = {ood_result[0].de}\nAUROC = {ood_result[0].roc}\nAUPR = {ood_result[0].pr} \n')
+                            f'\Performance on test set:\nFPR@TPR=95 = {ood_result[0].fpr}\nDetection error = {ood_result[0].de}\nAUROC = {ood_result[0].roc}\nAUPR = {ood_result[0].pr} \n')
                     
                 cur_metric = ood_result[0].roc
                 
