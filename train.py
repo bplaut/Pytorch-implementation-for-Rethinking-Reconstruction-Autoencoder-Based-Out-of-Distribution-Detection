@@ -24,6 +24,7 @@ from tools.utils import build_optimizer_schedular, time_str, save_ckpt, ReDirect
 from models.backbone.wideresnet import WideResNet
 from models.backbone.dense_net import DenseNet
 from draw import create_annotated_ood_images
+from make_tex import make_tex
 
 torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(True)
@@ -174,7 +175,6 @@ def main(cfg, args):
     if args.local_rank == 0:
         print(f'{cfg.NAME},  best_metrc : {best_metric} in epoch{epoch}')
 
-
 def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion, optimizer, lr_scheduler,
             path):
     
@@ -211,7 +211,8 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
         if (e >= cfg.TRAIN.MAX_EPOCH * 0.7 and e % 4 == 0) or args.always_eval:
             if args.save_image_path is not None:
                 output_dir = os.path.join(args.save_image_path, f'ood_visualized_epoch_{e}')
-                create_annotated_ood_images(cfg, args, model, valid_loader_list, output_dir)                
+                create_annotated_ood_images(cfg, args, model, valid_loader_list, output_dir)
+                make_tex(args.save_image_path, f'ood_visualized_epoch_{e}.tex')
             valid_loss, valid_gt, valid_logits = valid_trainer(
                 cfg,
                 args=args,
