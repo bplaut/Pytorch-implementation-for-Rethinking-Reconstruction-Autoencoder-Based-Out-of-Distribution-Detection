@@ -125,69 +125,68 @@ def valid_trainer(cfg, args, epoch, model, valid_loader_list, criterion):
         return valid_loss, gt_label, preds_logits
         
     else:
-        if cfg.DATASET.TYPE == 'cifar':
-            loss_meter_cls = AverageMeter()
-            loss_meter_rec_0 = AverageMeter()
-            loss_meter_rec_1 = AverageMeter()
+        loss_meter_cls = AverageMeter()
+        loss_meter_rec_0 = AverageMeter()
+        loss_meter_rec_1 = AverageMeter()
 
-            preds_logits = []
-            gt_list = []
-        
-            #ID and tinycrop
-            preds_all = [[],[]]
-            
-            count = 0
-            with torch.no_grad():
-                for valid_loader in valid_loader_list:
-                    
-                    probs_list = []
-                    rec_0_list = []
-                    rec_1_list = []
-                    
-                    for step, (imgs, gt_label) in enumerate(valid_loader):
-                        
-                        imgs = imgs.cuda(non_blocking=cfg.TRAIN.NON_BLOCKING)
-                        gt_label = gt_label.cuda(non_blocking=cfg.TRAIN.NON_BLOCKING)
-                        valid_logits, x_0, x_1, rec_0, rec_1 = model(imgs)
+        preds_logits = []
+        gt_list = []
 
-                        if count == 0:
-                            cls_loss, rec_0_loss, rec_1_loss = criterion(valid_logits, gt_label, x_0, x_1, rec_0, rec_1)
-                            
-                            gt_list.append(gt_label.cpu().numpy())
-                            preds_logits.append(valid_logits.cpu().numpy())
-                            loss_meter_cls.update(to_scalar(reduce_tensor(cls_loss, args.world_size) if args.distributed else cls_loss))
-                            loss_meter_rec_0.update(to_scalar(reduce_tensor(rec_0_loss, args.world_size) if args.distributed else rec_0_loss))
-                            loss_meter_rec_1.update(to_scalar(reduce_tensor(rec_1_loss, args.world_size) if args.distributed else rec_1_loss))
+        #ID and tinycrop
+        preds_all = [[],[]]
 
-                        probs = F.softmax(valid_logits/1000, dim=-1)
-                        
-                        norm_0 = torch.norm(x_0, p=2, dim=-1, keepdim=True)
-                        rec_0 = torch.sum(((x_0/norm_0) - (rec_0/norm_0))**2,dim=-1)
-                        
-                        norm_1 = torch.norm(x_1, p=2, dim=-1, keepdim=True)
-                        rec_1 = torch.sum(((x_1/norm_1) - (rec_1/norm_1))**2,dim=-1)
-                        
-                        probs_list.append(probs.cpu().numpy())
-                        rec_0_list.append(rec_0.cpu().numpy())
-                        rec_1_list.append(rec_1.cpu().numpy())
-                        
-                        torch.cuda.synchronize()
-                    
+        count = 0
+        with torch.no_grad():
+            for valid_loader in valid_loader_list:
+
+                probs_list = []
+                rec_0_list = []
+                rec_1_list = []
+
+                for step, (imgs, gt_label) in enumerate(valid_loader):
+
+                    imgs = imgs.cuda(non_blocking=cfg.TRAIN.NON_BLOCKING)
+                    gt_label = gt_label.cuda(non_blocking=cfg.TRAIN.NON_BLOCKING)
+                    valid_logits, x_0, x_1, rec_0, rec_1 = model(imgs)
+
                     if count == 0:
-                        valid_loss = [loss_meter_cls.avg, loss_meter_rec_0.avg, loss_meter_rec_1.avg]
-                        gt_list = np.concatenate(gt_list, axis=0)
-                        preds_logits = np.concatenate(preds_logits, axis=0)
-                    
-                    probs_list = np.concatenate(probs_list, axis=0)
-                    rec_0_list = np.concatenate(rec_0_list, axis=0)
-                    rec_1_list = np.concatenate(rec_1_list, axis=0)
-                    
-                    preds_all[count].append(probs_list) 
-                    preds_all[count].append(rec_0_list) 
-                    preds_all[count].append(rec_1_list) 
-                        
-                    count+=1
-                    
-            return valid_loss, gt_list, [preds_logits, preds_all]
+                        cls_loss, rec_0_loss, rec_1_loss = criterion(valid_logits, gt_label, x_0, x_1, rec_0, rec_1)
+
+                        gt_list.append(gt_label.cpu().numpy())
+                        preds_logits.append(valid_logits.cpu().numpy())
+                        loss_meter_cls.update(to_scalar(reduce_tensor(cls_loss, args.world_size) if args.distributed else cls_loss))
+                        loss_meter_rec_0.update(to_scalar(reduce_tensor(rec_0_loss, args.world_size) if args.distributed else rec_0_loss))
+                        loss_meter_rec_1.update(to_scalar(reduce_tensor(rec_1_loss, args.world_size) if args.distributed else rec_1_loss))
+
+                    probs = F.softmax(valid_logits/1000, dim=-1)
+
+                    norm_0 = torch.norm(x_0, p=2, dim=-1, keepdim=True)
+                    rec_0 = torch.sum(((x_0/norm_0) - (rec_0/norm_0))**2,dim=-1)
+
+                    norm_1 = torch.norm(x_1, p=2, dim=-1, keepdim=True)
+                    rec_1 = torch.sum(((x_1/norm_1) - (rec_1/norm_1))**2,dim=-1)
+
+                    probs_list.append(probs.cpu().numpy())
+                    rec_0_list.append(rec_0.cpu().numpy())
+                    rec_1_list.append(rec_1.cpu().numpy())
+
+                    torch.cuda.synchronize()
+
+                if count == 0:
+                    valid_loss = [loss_meter_cls.avg, loss_meter_rec_0.avg, loss_meter_rec_1.avg]
+                    gt_list = np.concatenate(gt_list, axis=0)
+                    preds_logits = np.concatenate(preds_logits, axis=0)
+
+                probs_list = np.concatenate(probs_list, axis=0)
+                rec_0_list = np.concatenate(rec_0_list, axis=0)
+                rec_1_list = np.concatenate(rec_1_list, axis=0)
+
+                preds_all[count].append(probs_list) 
+                preds_all[count].append(rec_0_list) 
+                preds_all[count].append(rec_1_list) 
+
+                count+=1
+
+        return valid_loss, gt_list, [preds_logits, preds_all]
             
 
