@@ -1,14 +1,19 @@
 import os
 import math
 
-def make_tex(directory_path, output_file="presentation.tex"):
+def make_tex(directory_path, output_filename="presentation.tex"):
     """
     Generate a LaTeX beamer presentation with animated frames from a directory of images.
     
     Args:
         directory_path (str): Path to the directory containing the annotated images
-        output_file (str): Path to save the output LaTeX file
+        output_filename (str): Name of the output LaTeX file
     """
+    # Put the output file in the parent directory of the images
+    if directory_path.endswith("/"):
+        directory_path = directory_path[:-1]
+    output_path = os.path.join(os.path.dirname(directory_path), output_filename)
+    
     # Count the number of image files in the directory
     image_files = [f for f in os.listdir(directory_path) if f.startswith("annotated_") and f.endswith(".png")]
     num_images = len(image_files)
@@ -104,8 +109,8 @@ def make_tex(directory_path, output_file="presentation.tex"):
     full_document = preamble + body + closing
     
     # Write to output file
-    with open(output_file, "w") as f:
+    with open(output_path, "w") as f:
         f.write(full_document)
     
-    print(f"LaTeX file generated: {output_file}")
+    print(f"LaTeX file generated: {output_path}")
     print(f"Found {max_image_num + 1} images, created {num_frames} animation frames")
