@@ -212,7 +212,7 @@ def trainer(cfg, args, epoch, model, train_loader, valid_loader_list, criterion,
             if args.save_image_path is not None:
                 output_dir = os.path.join(args.save_image_path, f'ood_visualized_epoch_{e}')
                 create_annotated_ood_images(cfg, args, model, valid_loader_list, output_dir)
-                make_tex(args.save_image_path, f'ood_visualized_epoch_{e}.tex')
+                make_tex(output_dir, f'ood_visualized_epoch_{e}.tex')
             valid_loss, valid_gt, valid_logits = valid_trainer(
                 cfg,
                 args=args,
