@@ -1,5 +1,6 @@
 import os
 import math
+import sys
 
 def make_tex(directory_path, output_filename="presentation.tex"):
     """
@@ -114,3 +115,10 @@ def make_tex(directory_path, output_filename="presentation.tex"):
     
     print(f"LaTeX file generated: {output_path}")
     print(f"Found {max_image_num + 1} images, created {num_frames} animation frames")
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python make_tex.py <directory_path>")
+        sys.exit(1)
+    directory_path = sys.argv[1]
+    make_tex(directory_path)
