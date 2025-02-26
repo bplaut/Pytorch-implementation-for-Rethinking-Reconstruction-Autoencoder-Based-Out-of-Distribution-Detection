@@ -7,16 +7,23 @@ from scipy.stats import norm
 from tqdm import tqdm
 
 def get_color_from_score(score):
+    """
+    Returns a color based on score from a smooth gradient.
+    Low scores (0.0) = Red (more OOD)
+    Mid scores (0.5) = Orange
+    High scores (1.0) = Green (more ID)
+    """
     if score < 0.5:
-        # Green to Yellow
-        r = int(255 * (score * 2))
-        g = 255
+        # Interpolate between red and orange
+        r = 255
+        g = int(128 * (score * 2))  # 0 to 128
         b = 0
     else:
-        # Yellow to Red
-        r = 255
-        g = int(255 * (1 - (score - 0.5) * 2))
+        # Interpolate between orange and green
+        r = int(255 * (1 - (score - 0.5) * 2))  # 255 to 0
+        g = int(128 + 127 * (score - 0.5) * 2)  # 128 to 255
         b = 0
+    
     return (r, g, b)
 
 def create_annotated_ood_images(cfg, args, model, valid_loader_list, output_dir):
